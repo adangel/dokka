@@ -42,7 +42,7 @@ data class ExtensionBuilder<T: Any> internal constructor(
         conditions
     )
 
-    fun overrideExtension(extension: Extension<T, *, *>) = copy(override = OverrideKind.Present(extension))
+    fun overrideExtension(extension: Extension<T, *, *>) = copy(override = OverrideKind.Present(listOf(extension)))
 
     fun newOrdering(before: Array<Extension<*, *, *>>, after: Array<Extension<*, *, *>>) {
         copy(ordering = OrderingKind.ByDsl {
