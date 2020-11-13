@@ -1,6 +1,5 @@
 package org.jetbrains.dokka.base.renderers.html
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.jetbrains.dokka.Platform
 import org.jetbrains.dokka.model.DisplaySourceSet
 import org.jetbrains.dokka.model.dfs
@@ -8,16 +7,14 @@ import org.jetbrains.dokka.pages.*
 import java.util.concurrent.ConcurrentHashMap
 
 data class SearchRecord(val name: String, val description: String? = null, val location: String, val searchKeys: List<String> = listOf(name)) {
-    companion object { }
+    companion object {}
 }
 
 open class SearchbarDataInstaller {
-    private val mapper = jacksonObjectMapper()
-
     private val pageList = ConcurrentHashMap<String, Pair<String, String>>()
 
-    open fun generatePagesList(): String {
-        val pages = pageList.entries
+    open fun generatePagesList(): List<SearchRecord> =
+        pageList.entries
             .filter { it.key.isNotEmpty() }
             .sortedWith(compareBy({ it.key }, { it.value.first }, { it.value.second }))
             .groupBy { it.key.substringAfterLast(".") }
@@ -33,8 +30,6 @@ open class SearchbarDataInstaller {
                     )
                 }
             }
-        return mapper.writeValueAsString(pages)
-    }
 
     open fun createSearchRecord(name: String, description: String?, location: String, searchKeys: List<String>): SearchRecord =
         SearchRecord(name, description, location, searchKeys)

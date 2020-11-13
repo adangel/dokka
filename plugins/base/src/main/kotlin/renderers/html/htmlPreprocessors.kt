@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.base.renderers.sourceSets
+import org.jetbrains.dokka.base.templating.AddToSearch
 import org.jetbrains.dokka.model.DEnum
 import org.jetbrains.dokka.model.DEnumEntry
 import org.jetbrains.dokka.model.DFunction
@@ -28,12 +29,16 @@ class NavigationPageInstaller(private val context: DokkaContext) : PageTransform
             name = "scripts/navigation-pane.json",
             children = emptyList(),
             strategy = RenderingStrategy.LocationResolvableWrite { resolver ->
-                mapper.writeValueAsString(
-                    nodes.withDescendants().map { SearchRecord.from(it, resolver(it.dri, it.sourceSets)) })
+                val allNodes = nodes.withDescendants().map { SearchRecord.from(it, resolver(it.dri, it.sourceSets)) }
+                if (context.configuration.delayTemplateSubstitution) {
+                    mapper.writeValueAsString(AddToSearch(context.configuration.moduleName, allNodes.toList()))
+                } else {
+                    mapper.writeValueAsString(nodes.withDescendants().map { SearchRecord.from(it, resolver(it.dri, it.sourceSets)) })
+                }
             })
 
         return input.modified(
-            children = input.children + page + NavigationPage(nodes, context.configuration.moduleName)
+            children = input.children + page + NavigationPage(nodes, context.configuration.moduleName, context)
         )
     }
 
